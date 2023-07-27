@@ -9,25 +9,31 @@
 
 int main(int ac, char **av, char **env)
 {
-size_t len = 0;
-char *buffer = NULL, *cmd;
+char *buffer = NULL, *cmd, *read;
 int token_size = 0;
 size_t size = 0;
-int n_char = 0, status;
+int status;
 pid_t pid;
+signal(SIGINT, sig_handler);
 while (1)
 {
-write(1, "$ ", 2);
-n_char = getline(&buffer, &size, stdin);
-if (n_char == -1)
+if (isatty(STDIN_FILENO))
 {
-write(1, "\n", 1);
-exit(1);
+write(1, "$ ", 2);
+read = read_input_interactive(&buffer, &size);
 }
-buffer[n_char - 1] = '\0';
-char **tokens = splitter(buffer);
+else
+{
+read = read_input_noninteractive(&buffer, &size);
+}
+strcpy(command, read);
+char **tokens = splitter(command);
 if (strcmp(tokens[0], "exit") == 0)
 exit(0);
+else if (strcmp(tokens[0], "setenv") == 0 || strcmp(tokens[0], "getenv") == 0)
+{
+handle_env_commands(tokens);
+}
 pid = fork();
 if (pid == 0)
 {
@@ -39,5 +45,7 @@ exit(0);
 }
 wait(&status);
 }
+free(read);
+free(tokens);
 return (0);
 }

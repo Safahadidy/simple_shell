@@ -15,4 +15,10 @@ char *get_command(char *command);
 char *get_env_var(char *env_var);
 extern char **environ;
 int set_env_var(char *name, char *value, int overwrite);
+char *read_input_interactive(char **buffer, size_t *size);
+char *read_input_noninteractive(char **buffer, size_t *size);
+int _putchar(char c);
+void _puts(char *str);
+void sig_handler(int signal);
+void handle_env_commands(char **tokens);
 #endif
