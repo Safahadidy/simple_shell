@@ -28,12 +28,12 @@ buffer[n_char - 1] = '\0';
 char **tokens = splitter(buffer);
 if (strcmp(tokens[0], "exit") == 0)
 exit(0);
-pid = fork()
+pid = fork();
 if (pid == 0)
 {
 cmd = get_command(tokens[0]);
 if (cmd)
-exceve(cmd, tokens, env);
+execve(cmd, tokens, env);
 printf("Command not found\n");
 exit(0);
 }
