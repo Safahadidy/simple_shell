@@ -13,7 +13,7 @@ n_read = getline(data, sizebuffer, stdin);
 if (n_read == '\0')
 {
 free(*buffer);
-exit (1);
+exit(1);
 }
 if (n_read == EOF)
 {
