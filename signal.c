@@ -8,6 +8,6 @@ void sig_handler(int signal)
 {
 if (signal == SIGINT)
 {
-write(1, "\n$ ", 4)
+write(1, "\n$ ", 4);
 }
 }

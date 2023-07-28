@@ -8,7 +8,7 @@
 char *read_input_interactive(char **buffer, size_t *size)
 {
 char *data;
-n_read = getline(data, size, stdin);
+size_t n_read = getline(&data, size, stdin);
 if (n_read == '\0')
 {
 free(*buffer);
