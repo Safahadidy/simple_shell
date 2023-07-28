@@ -17,9 +17,22 @@ if (tokens == NULL)
 perror("realloc");
 exit(EXIT_FAILURE);
 }
-tokens[i++] = token;
+tokens[i] = strdup(token);
+if (tokens[i] == NULL)
+{
+perror("strdup");
+exit(EXIT_FAILURE);
+}
+i++;
 token = strtok(NULL, " \t\n");
 }
+tokens = realloc(tokens, sizeof(char *) * (i + 1));
+if (tokens == NULL)
+{
+perror("realloc");
+exit(EXIT_FAILURE);
+}
+tokens[i] = NULL;
 for (i = 0; tokens[i]; i++)
 printf("%s\n", tokens[i]);
 return (tokens);

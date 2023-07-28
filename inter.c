@@ -7,18 +7,20 @@
  */
 char *read_input_interactive(char **buffer, size_t *size)
 {
-char *data;
-size_t n_read = getline(&data, size, stdin);
-if (n_read == '\0')
+char *data = NULL;
+ssize_t n_read = getline(&data, size, stdin);
+if (n_read == -1)
 {
-free(*buffer);
+free(data);
+*buffer = NULL;
 exit(1);
 }
 if (n_read == EOF)
 {
 _puts("\n");
-free(*buffer);
+free(data);
 exit(EXIT_SUCCESS);
 }
+*buffer = data;
 return (data);
 }
