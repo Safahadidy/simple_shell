@@ -7,9 +7,8 @@
  */
 char *read_input_interactive(char **buffer, size_t *size)
 {
-ssize_t n_read = 0;
-fflush(stdin);
-n_read = getline(data, sizebuffer, stdin);
+char *data;
+n_read = getline(data, size, stdin);
 if (n_read == '\0')
 {
 free(*buffer);
@@ -21,5 +20,5 @@ _puts("\n");
 free(*buffer);
 exit(EXIT_SUCCESS);
 }
-return (*buffer);
+return (data);
 }
