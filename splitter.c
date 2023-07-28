@@ -1,4 +1,9 @@
 #include "shell.h"
+/**
+ * splitter - function that read and store any instruction
+ * @str: the string
+ * Return: pointer to buffer where information is stored
+ */
 char **splitter(char *str)
 {
 char *token, **tokens = NULL;
