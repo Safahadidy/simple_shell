@@ -15,7 +15,7 @@ while (1)
 if (isatty(STDIN_FILENO))
 {
 write(1, "$ ", 2);
-read = read_input_interactive(&buffer, &size);
+read = read_input_interactive(&buffer);
 }
 else
 {

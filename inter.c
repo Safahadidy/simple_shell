@@ -5,10 +5,11 @@
  * @size: size of instruction
  * Return: pointer to buffer where information is stored
  */
-char *read_input_interactive(char **buffer, size_t *size)
+char *read_input_interactive(char **buffer)
 {
 char *data = NULL;
-ssize_t n_read = getline(&data, size, stdin);
+size_t size = 0;
+ssize_t n_read = getline(&data, &size, stdin);
 if (n_read == -1)
 {
 free(data);
