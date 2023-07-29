@@ -1,0 +1,12 @@
+#include "simple_shell"
+/**
+ * _get_line - function that read and store any instruction
+ * stdin :input
+ * @buffer: the adress where instruction is stored (buffer)
+ * @size_t: size of instruction
+ * Return: pointer to buffer where information is stored
+ */
+_getline(char *buffer, size_t size, stdin)
+{
+return (getline(&buffer, &size, stdin);
+}

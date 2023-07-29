@@ -8,23 +8,23 @@ char *get_command(char *command)
 {
 char *path = (char *)getenv("PATH");
 char *token;
-char *cmd_full;
+char *cmd;
 struct stat st;
 token = strtok(path, ":");
 while (token)
 {
-cmd_full = malloc(strlen(token) + strlen(command) + 2);
-if (cmd_full == NULL)
+cmd = malloc(strlen(token) + strlen(command) + 3);
+if (cmd == NULL)
 {
 perror("malloc");
 exit(EXIT_FAILURE);
 }
-strcpy(cmd_full, token);
-strcat(cmd_full, "/");
-strcat(cmd_full, command);
-if (stat(cmd_full, &st) == 0)
-return (cmd_full);
-free(cmd_full);
+strcpy(cmd, token);
+strcat(cmd, "/");
+strcat(cmd, command);
+if (stat(cmd, &st) == 0)
+return (cmd);
+free(cmd);
 token = strtok(NULL, ":");
 }
 return (NULL);

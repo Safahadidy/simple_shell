@@ -9,14 +9,14 @@ char *read_input_interactive(char **buffer)
 {
 char *data = NULL;
 size_t size = 0;
-ssize_t n_read = getline(&data, &size, stdin);
-if (n_read == -1)
+ssize_t n_line = _getline(&data, &size, stdin);
+if (n_line == -1)
 {
 free(data);
 *buffer = NULL;
 exit(1);
 }
-if (n_read == EOF)
+if (n_line == EOF)
 {
 _puts("\n");
 free(data);

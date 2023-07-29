@@ -15,7 +15,7 @@ char *get_command(char *command);
 char *get_env_var(char *env_var);
 extern char **environ;
 int set_env_var(char *name, char *value, int overwrite);
-getline(&buffer, &size, stdin);
+ssize_t _getline(char **buffer, size_t *size, FILE *_stdin);
 char *read_input_interactive(char **buffer);
 int _putchar(char c);
 void _puts(char *str);
