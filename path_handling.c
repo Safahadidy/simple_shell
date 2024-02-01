@@ -1,150 +1,86 @@
 #include "shell.h"
 
 /**
- * paths_to_linkedlist - a function that returns a linked list of paths
- * tokenized from path enviroment variable (PEV).
- *
- * Return: a linked list, which contains the paths extracted
- * from the "PATH" environment variable.
+ * search_path - searches for a command in a list of paths
+ * @info: pointer to info_t struct
+ * @path_list: list of paths
+ * @command: command to search
+ * Return: command || new_path || NULL on error
 */
-list_paths *paths_to_linkedlist()
+char *search_path(info_t *info, char *path_list, char *command)
 {
-	list_paths *paths_linkedlists;
-	char *copied_variable, *path_variable, *token;
+	int index = 0, start_pos = 0;
+	char *new_path;
 
-	paths_linkedlists = NULL;
-
-	/*getting the PEV and store it at a pointer to char*/
-	path_variable = _getenv("PATH");
-	if (path_variable == NULL)
+	if (!path_list)
 		return (NULL);
-	/*copying PEV to a new one to start handling it*/
-	copied_variable = _strdup(path_variable);
-	if (copied_variable == NULL)
-		return (NULL);
-	/*Tokenising the New PEV by (:) delimeter*/
-	token = strtok(copied_variable, ":");
-	while (token != NULL)/*looping tell the end*/
+	if ((_strlen(command) > 2) && find_prefix(command, "./"))
 	{
-		/*adding each token in path as a node in LL */
-		add_node(&paths_linkedlists, token);
-		/*
-		* each call will return the next token in the
-		* string until there are no more tokens left
-		*/
-		token = strtok(NULL, ":");
+		if (is_cmd(info, command))
+			return (command);
 	}
-	free(copied_variable);
-	/*
-	* returns a linked list, which contains the paths extracted from
-	* the "PATH" environment variable.
-	*/
-	return (paths_linkedlists);
+	while (1)
+	{
+		if (!path_list[index] || path_list[index] == ':')
+		{
+			new_path = dup_chars(path_list, start_pos, index);
+			if (!*new_path)
+				_strcat(new_path, command);
+			else
+			{
+				_strcat(new_path, "/");
+				_strcat(new_path, command);
+			}
+			if (is_cmd(info, new_path))
+				return (new_path);
+			if (!path_list[index])
+				break;
+			start_pos = index;
+		}
+		index++;
+	}
+	return (NULL);
 }
 
 /**
- * add_node - a function that adds a new node at the beginning of a list_t list
- * @head: pointer to the head of list with the type list_paths
- * @path: pointer to path.
- * Return: the address of the new element, or NULL if it failed
+ * is_cmd - function to check if a file is a command
+ * @info: pointer to info_t struct
+ * @path: path to check
+ * Return: 0 || 1
 */
-list_paths *add_node(list_paths **head, char *path)
+
+int is_cmd(info_t *info, char *path)
 {
-	list_paths *new;
-	int i = 0;
-	char *string_path;
+	struct stat st;
 
+	(void)info;
 
-	/*getting the count of elements (i), in str array of chars*/
-	while (path[i] != '\0')
-	{
-		i++;
-	}
-	/*allocating memory to new node with type list_paths*/
-	new = malloc(sizeof(list_paths));
-	/*assuring it doesn't point to NULL*/
-	if (new == NULL)
-		return (NULL);
-
-	if (path)
-	{
-	/*duplicating the contents of path in path element of the new node created*/
-	string_path = _strdup(path);
-	if (string_path == NULL)
-	{
-		free(new);
-		return (NULL);
-	}
-	/*updating len element with the length of the new path entered*/
-	new->len = i;
-	new->path = string_path;
-	}
-	else
-	{
-		new->len = 0;
-		new->path = NULL;
-	}
-	/*updating the next pointer with a pointer to the new node*/
-	new->next = (*head);
-
-	*head = new;
-	return (new);
-}
-
-/**
-* free_list - Frees a singly linked list
-* @head: Pointer to the head of the list
-*/
-void free_list(list_paths *head)
-{
-	list_paths *ptr = head;
-	list_paths *nextNode;
-
-	while (ptr != NULL)
-	{
-		/**
-		* saves a pointer to the next node in the list
-		* so we don't loose track of the linked list
-		*/
-
-		nextNode = ptr->next;
-		free(ptr->path);
-		free(ptr);
-		/*moving the pointer to the next node*/
-		ptr = nextNode;
-	}
-
-}
-
-/**
- * print_list - prints all the elements of a list_paths list
- * If str is NULL, print [0] (nil)
- * @h: pointer to the head of list with the type list_paths
- * Return: the number of nodes
-*/
-size_t print_list(const list_paths *h)
-{
-	int count;
-
-	if (h == NULL)
-	{
+	if (!path || stat(path, &st))
 		return (0);
-	}
-	count = 0;
-	while (h)
+
+	if (st.st_mode & S_IFREG)
 	{
-		if (h->path == NULL)
-		{
-			printf("[0] (nil)\n");
-			fflush(stdout);
-		}
-		else
-		{
-			printf("[%d] %s\n", h->len, h->path);
-			fflush(stdout);
-		}
-		h = h->next;
-		count++;
+		return (1);
 	}
-	return (count);
+	return (0);
+}
+
+/**
+ * dup_chars - duplicates a string
+ * @path: string to duplicate
+ * @start: start index
+ * @stop: stop index
+ * Return: pointer to new string
+*/
+
+char *dup_chars(const char *path, int start, int stop)
+{
+	static char buffer[1024];
+	int index, j;
+
+	for (j = 0, index = start; index < stop; index++)
+		if (path[index] != ':')
+			buffer[j++] = path[index];
+	buffer[j] = 0;
+	return (buffer);
 }

@@ -1,52 +1,53 @@
 #include "shell.h"
-/**
-* main - Function that run SHELL program
-* @argc: Argument Count.
-* @argv: Argument vector
-* @env: The shell environment
-* Return: Exit status of the program
-*/
-int main(int argc, char *argv[], char *env[])
-{
-	int *status, count = 0, non_interactive = 1, s = 0, op_mode;
-	char *command, **command_lines, **cmd_arr = NULL;
-	list_paths *current;
 
-	status = &s;
-	op_mode = check_mode(argc);
-	if (op_mode != INTERACTIVE_MODE)/*checking the file after the command*/
-		command_lines = scan_command_files(op_mode, argv[1], argv[0]);
-	current = paths_to_linkedlist();/*turning the path current to a linked */
-	while (non_interactive && ++count)
+/**
+ * check_non_interactive - checks if shell is non-interactive
+ * @argc: arg count
+ * @argv: arg vector
+ * @info: the parameter & return info struct
+ * Return: EXIT_FAILURE || EXIT_SUCCESS
+ */
+int check_non_interactive(int argc, char **argv, info_t info[])
+{
+	int file_descriptor = 5;
+
+	if (argc == 2)
 	{
-		if (op_mode == NON_INTERACTIVE_MODE || op_mode == NON_INTERACTIVE_PIPE)
+		file_descriptor = open(argv[1], O_RDONLY);
+		if (file_descriptor == -1)
 		{
-			if (command_lines[count - 1])
-				command = command_lines[count - 1];
-			else
+			if (errno == EACCES)
+				exit(PERMISSION_DENIED);
+			if (errno == ENOENT)
 			{
-				free(command_lines);
-				break;
+				print_string(argv[0]);
+				print_string(": 0: Can't open ");
+				print_string(argv[1]);
+				print_char('\n');
+				print_char(BUFFER_FLUSH);
+				exit(COMMAND_NOT_FOUND);
 			}
+			return (EXIT_FAILURE);
 		}
-		else if (op_mode == INTERACTIVE_MODE)
-			command = scan_cmd_user(current); /*prompt user&get command*/
-		if (!command)
-			continue;
-		cmd_arr = line_to_vector(command, *status);
-		if (!cmd_arr)
-		{
-			free(command);
-			continue;
-		}
-		if (dir_check(cmd_arr[0], argv, count, cmd_arr, status, command) == 0)
-			continue;
-		if (builtin_handler(command, cmd_arr, current, argv[0],
-			count, status, NULL, command_lines, argv) != 0)
-			nonbuiltin_hndler(cmd_arr, env, status, count, current, argv);
-		free_all(command, cmd_arr);
+		info->file_descriptor = file_descriptor;
 	}
-	free_list(current);
-	exit(*status);
+
+	return (EXIT_SUCCESS);
 }
 
+/**
+ * main - entry point
+ * @argc: arg count
+ * @argv: arg vector
+ * Return: EXIT_FAILURE || EXIT_SUCCESS
+ */
+int main(int argc, char **argv)
+{
+	info_t info[] = {INFO_INIT};
+
+	check_non_interactive(argc, argv, info);
+
+	init_env_variables(info);
+	shell_exec(info, argv);
+	return (EXIT_SUCCESS);
+}
