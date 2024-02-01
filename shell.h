@@ -1,200 +1,102 @@
-#ifndef SHELL_H
-#define SHELL_H
+#ifndef HEADER_H
+#define HEADER_H
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
-#include <limits.h>
 #include <fcntl.h>
-#include <errno.h>
-#include <signal.h>
-#include <ctype.h>
-
-
-#define BUFFER_FLUSH (-1)
-
-#define NORMAL_COMMAND 0
-#define LOGICAL_OR_COMMAND 1
-#define LOGICAL_AND_COMMAND 2
-#define SEQUENTIAL_COMMAND 3
-
-#define CONVERT_LOWERCASE 1
-#define CONVERT_UNSIGNED 2
-
-#define READ_BUFFER_SIZE 1024
-#define WRITE_BUFFER_SIZE 1024
-
+#include <linux/limits.h>
+#include <dirent.h>
+/*my macros*/
+#define INTERACTIVE 1
+#define NON_INTERACTIVE_FILE 0
+#define NON_INTERACTIVE_PIPED 2
+#define ERROR -1
+/*Error status macros*/
+#define NOT_FOUND 127
 #define PERMISSION_DENIED 126
-#define COMMAND_NOT_FOUND 127
-
-#ifndef S_IFREG
-#define S_IFREG 0100000
-#endif
-
+#define EXIT_ERROR 2
+#define TOK_D " \t\r\n\a\""
 extern char **environ;
-
 /**
- * struct list_str - list of strings
- * @num: the list number
- * @str: the string
- * @next: the next node
+ * struct list_path - singly linked list
+ * @path: string
+ * @len: length of the string
+ * @next: points to the next node
+ *
+ * Description: singly linked list node structure
  */
-typedef struct list_str
+typedef struct list_path
 {
-	int num;
-	char *str;
-	struct list_str *next;
-} list_t;
-
-/**
- * struct parsed_info - Structure for passing information to functions
- * @arg: Command argument
- * @argv: Command argument vector
- * @path: Path
- * @line_count: Line count
- * @error_num: Error number
- * @env_changed: Flag indicating if the environment has changed
- * @status: Status
- * @command_buffer: Command buffer
- * @command_buffer_type: Type of command buffer
- * @file_name: File name
- * @env: Environment
- * @alias: Alias
- * @environ: Environment
- * @argc: Argument count
- * @line_count_flag: Line count flag
- * @file_descriptor: File descriptor
- */
-typedef struct parsed_info
-{
-	char *arg;
-	char **argv;
 	char *path;
-	int argc;
-	unsigned int line_count;
-	int error_num;
-	int line_count_flag;
-	char *file_name;
-	list_t *env;
-	list_t *alias;
-	char **environ;
-	int env_changed;
-	int status;
-	char **command_buffer;
-	int command_buffer_type;
-	int file_descriptor;
-} info_t;
-
-#define INFO_INIT \
-{NULL, NULL, NULL, 0, 0, 0, 0, NULL, NULL, NULL, NULL, 0, 0, NULL, \
-	0, 0}
-
-/**
- * struct builtin - function selects suitable builtin function
- * @type: type of builtin
- * @func: selected builtin function
- */
-typedef struct builtin
-{
-	char *type;
-	int (*func)(info_t *);
-} builtin_table;
-
-int check_non_interactive(int argc, char **argv, info_t info[]);
-
-int find_builtin_command(info_t *);
-void find_command(info_t *);
-void fork_command(info_t *);
-int shell_exec(info_t *, char **);
-
-/* path handling */
-int is_cmd(info_t *, char *);
-char *dup_chars(const char *, int, int);
-char *search_path(info_t *, char *, char *);
-
-/* printing functions */
-void print_string(char *);
-int print_char(char);
-
-/* string overwritten functions */
-int _strlen(char *);
-int _strcmp(char *, char *);
-char *find_prefix(const char *, const char *);
-char *_strcat(char *, char *);
-char *_strcpy(char *, char *);
-char *_strdup(const char *);
-void _puts(char *);
-int _putchar(char);
-char *_strncpy(char *, char *, int);
-char *_strncat(char *, char *, int);
-char *_strchr(char *, char);
-
-/* string tokenization functions */
-char **split_string(char *, char *);
-int count_words(char *str, char *delimiter);
-
-/* memory functions */
-char *_memset(char *, char, unsigned int);
-void string_free(char **);
-void *_realloc(void *, unsigned int, unsigned int);
-int pointer_free(void **);
-
-/* validation functions */
-int interactive(info_t *);
-int is_delim(char, char *);
-
-int parse_error_integer(char *);
-void print_error(info_t *, char *);
-int print_decimal(int, int);
-char *convert_number(long int, int, int);
-void remove_comments(char *);
-
-int shell_exit(info_t *);
-int shell_cd(info_t *);
-
-int shell_alias(info_t *);
-
-ssize_t get_input(info_t *);
-int _getline(info_t *, char **, size_t *);
-ssize_t input_buffer(info_t *, char **, size_t *);
-ssize_t read_buffer(info_t *, char *, size_t *);
-void handle_sigint_signal(int);
-
-void reset_info(info_t *);
-void initialize_info(info_t *, char **);
-void deallocate_info(info_t *, int);
-
-/* environment functions */
-char *_getenv(info_t *, const char *);
-int shell_env(info_t *);
-int shell_setenv(info_t *);
-int shell_unsetenv(info_t *);
-int init_env_variables(info_t *);
-char **get_environ(info_t *);
-int _unsetenv(info_t *, char *);
-int _setenv(info_t *, char *, char *);
-
-/* liked list functions */
-list_t *add_node_end(list_t **, const char *, int);
-size_t print_list_str(const list_t *);
-int delete_node_at_index(list_t **, unsigned int);
-void free_list(list_t **);
-size_t list_len(const list_t *);
-char **list_to_strings(list_t *);
-list_t *node_starts_with(list_t *, char *, char);
-ssize_t get_node_index(list_t *, list_t *);
-
-/* alias functions */
-int detect_command_separator(info_t *, char *, size_t *);
-void handle_sep(info_t *, char *, size_t *, size_t, size_t);
-int alias_replace(info_t *);
-int variables_substitute(info_t *);
-int string_replace(char **, char *);
-int unset_alias(info_t *, char *);
-int print_alias(list_t *);
-
+	unsigned int len;
+	struct list_path *next;
+} list_path;
+int _strcmp(char *s1, char *s2);
+char *_getenv(char *name);
+void free_list(list_path *head);
+int _strlen(char *s);
+ssize_t _getlineHelper(char **lineptr, size_t *n,
+		__attribute__((unused)) FILE * stream);
+ssize_t _getline(char **lineptr, size_t *n, FILE *stream);
+char *_strdup(char *str);
+char *_strcat(char *dest, char *src);
+char *_strcpy(char *dest, char *src);
+list_path *add_node(list_path **head, char *path);
+list_path *set_all_paths_to_list();
+list_path *set_all_vector_to_list();
+char **get_av_with_flags(char *line, int status);
+unsigned int char_count(char *str, char c);
+/*==========================================================================*/
+void free_all(char **lines, int counter, list_path *env,
+				list_path *current, char *line, char **line_vector);
+int _varcmp(char *var_name, char *full_var);
+void _setenv(char *name, char *value, list_path *env_list);
+list_path *get_variable(char *name, list_path *head);
+size_t print_list(const list_path *p);
+void set_list_env(list_path *p);
+size_t env_list_len(const list_path *p);
+int _cd(char *line_vector[], char **argv);
+unsigned int _chrCheck(char c, const char *str);
+char *_strtok(char *str, const char *delim);
+unsigned int char_count_piped(char *str, char c);
+void print_cant_open(char *program_name, int counter, char *file_name);
+void is_not_built_in(char **line_vector, char *env[], int *status,
+						int counter, list_path *current, char *argv[]);
+char **text_to_vector(char *text);
+char **file_non_interactive(char *file_name, char *program_name);
+char **piped_non_interactive();
+char **get_commands(int mode, char *file_name, char *program_name);
+void free_l_v(char *line, char **line_vector);
+int is_dir(char *line, char **argv, int counter,
+			char **line_vector, int *status, char *old_line);
+int _atoi(char *s);
+void is_exit(char *line, char **line_vector, list_path *current,
+		char *program_name, int counter, int *status, list_path *env, char **lines);
+void print_error(char *program_name, int counter,
+		char *command, int type_of_error);
+void handle_comments(char *input);
+/*==*/
+void handle_semicolons(char *line);
+void execute_command_with_waitpid(char *path, char **av, char **env);
+/*====*/
+char *num_to_char(int num);
+char *check_access(char *line_av_1, list_path *current);
+void execute_command(char *path, char **av, char **env, int *status);
+void print_env(int *status);
+char *get_process_id();
+char *get_status(int n);
+int is_built_in(char *line, char **line_vector, list_path *current,
+		char *program_name,
+		int counter, int *status, list_path *env, char **lines, char **argv);
+void print_error(char *program_name, int counter,
+		char *command, int type_of_error);
+char *get_command_from_file(char *file);
+char *get_command_from_user(list_path *current);
+int check_mode(int argc);
+void free_vector(char **v);
 #endif
